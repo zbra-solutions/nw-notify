@@ -155,22 +155,14 @@ function calcDimensions() {
 
 // Init screen to gather some information
 gui.Screen.Init();
-var screens = gui.Screen.screens;
 
-// Use first screen only
-var cur_screen = screens[0];
+var cur_screen = null;
 
-// Display notifications starting from lower right corner
-// Calc lower right corner
-config.lowerRightCorner = {};
-config.lowerRightCorner.x = cur_screen.bounds.x + cur_screen.work_area.x + cur_screen.work_area.width;
-config.lowerRightCorner.y = cur_screen.bounds.y + cur_screen.work_area.y + cur_screen.work_area.height;
+updateConfig();
 
-calcDimensions();
-
-// Maximum amount of Notifications we can show:
-config.maxVisibleNotifications = Math.floor(cur_screen.work_area.height / (config.totalHeight));
-config.maxVisibleNotifications = (config.maxVisibleNotifications > 7) ? 7 : config.maxVisibleNotifications;
+// Subscribe to node-webkit screen events
+gui.Screen.on('displayAdded', updateConfig);
+gui.Screen.on('displayRemoved', updateConfig);
 
 // Array of windows with currently showing notifications
 var activeNotifications = [];
@@ -493,6 +485,36 @@ function closeAll() {
 	_.forEach(inactiveWindows, function(window) {
 		window.close();
 	});
+}
+
+function updateConfig() {
+	cur_screen = getPrimaryScreen();
+
+	// Display notifications starting from lower right corner
+	// Calc lower right corner
+	config.lowerRightCorner = {};
+	config.lowerRightCorner.x = cur_screen.bounds.x + cur_screen.work_area.x + cur_screen.work_area.width;
+	config.lowerRightCorner.y = cur_screen.bounds.y + cur_screen.work_area.y + cur_screen.work_area.height;
+
+	calcDimensions();
+
+	// Maximum amount of Notifications we can show:
+	config.maxVisibleNotifications = Math.floor(cur_screen.work_area.height / (config.totalHeight));
+	config.maxVisibleNotifications = (config.maxVisibleNotifications > 7) ? 7 : config.maxVisibleNotifications;
+}
+
+function getPrimaryScreen() {
+	var screens = gui.Screen.screens;
+
+	for (var i = 0; i < screens.length; i++) {
+		var screen = screens[i];
+
+		if (screen.bounds.x === 0 && screen.bounds.y === 0) {
+			return screen;
+		}
+	}
+
+	return screens[0];
 }
 
 module.exports.notify = notify;
