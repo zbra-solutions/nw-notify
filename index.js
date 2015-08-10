@@ -38,6 +38,10 @@ AnimationQueue.prototype.animate = function(object) {
 	});
 };
 
+AnimationQueue.prototype.clear = function() {
+	this.queue.length = 0;
+};
+
 var config = {
 	width: 300,
 	height: 65,
@@ -476,15 +480,35 @@ function setStyleOnDomElement(styleObj, domElement){
   }
 }
 
+function hideAll() {
+	animationQueue.clear();
+
+	_.forEach(activeNotifications, function(window) {
+		window.hide();
+	});
+
+	activeNotifications.length = 0;
+	inactiveWindows.length = 0;
+	notificationQueue.length = 0;
+
+	updateConfig();
+}
+
 function closeAll() {
 	// Clear out animation Queue and close windows
-	animationQueue = [];
+	animationQueue.clear();
+
 	_.forEach(activeNotifications, function(window) {
 		window.close();
 	});
+
 	_.forEach(inactiveWindows, function(window) {
 		window.close();
 	});
+
+	activeNotifications.length = 0;
+	inactiveWindows.length = 0;
+	notificationQueue.length = 0;
 }
 
 function updateConfig() {
@@ -523,3 +547,4 @@ module.exports.getAppPath = getAppPath;
 module.exports.getTemplatePath = getTemplatePath;
 module.exports.setTemplatePath = setTemplatePath;
 module.exports.closeAll = closeAll;
+module.exports.hideAll = hideAll;
